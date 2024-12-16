@@ -1,31 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Sika Noppapeli</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .hidden { display: none; }
+        .player-turn { font-weight: bold; color: green; }
+        .game-board { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Sika-Noppapeli</h1>
-    <div>
-        <h3>Valitse noppien määrä</h3>
 
-        <button onclick="setdice()">Yksi Noppa</button>
-        <button onclick="setdice2()">Kaksi Noppaa</button>
-        
-        <input name="Pelaajat" placeholder="Lisää Pelaaja" id="pelaajat" >Pelaajat
-        <button onclick="addPlayer()">Lisää</button>
-    
-    </div> 
-        <img src="d1.gif" name="mydice">
-        <button onclick="throwdice() ">1 Dice Roll Test</button>
-        <button onclick="throw2dice()">2 Dice button test</button>
-        <img src="d1.gif" name="myotherdice" class="invisible" id="otherdice">
+    <h1>Sika Noppapeli</h1>
 
+    <div id="aloitus">
+        <label for="num-players">Pelaajien määrä:</label>
+        <input type="number" id="num-players" min="2" max="6" value="2">
+        <button id="start-game" onclick="Aloitapeli()">Aloita peli</button>
+    </div>
+
+    <div id="players-setup" class="hidden">
+        <h3>Pelaajien nimet:</h3>
+        <div id="player-names"></div>
+        <button id="start-play" onclick="startgame()">Aloita peli</button>
+    </div>
+
+    <div id="game" class="hidden">
+        <h3><span id="current-player"></span>'n vuoro!</h3>
+        <button id="roll-dice" onclick="rollDice()">Heitä noppaa</button>
+        <button id="end-turn" class="hidden" onclick="stopTurn()">Lopeta vuoro</button>
+
+        <p>Heittojen summa: <span id="round-score">0</span></p>
+        <p>Pistemäärä: <span id="score">0</span></p>
+
+        <div id="dice-rolls"></div>
+
+        <div id="message"></div>
+
+        <div class="game-board">
+            <h3>Pelaaja pisteet</h3>
+            <ul id="scoreboard"></ul>
+        </div>
+    </div>
 
     <script src="main.js"></script>
 </body>
 </html>
-
-

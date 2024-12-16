@@ -3,73 +3,139 @@ Rules: 1 Dice; Let the playe throw as many times until dice hits 1. Also let him
 Rules: 2 Dice; Let player throw as many times; If both dice have same number. Double the amount. If you throw 2 ones. you get 25 points. If you throw 1 one. Their turn ends. No summing;
 Note: If you throw 3 doubles in a row. your round ends and you dont get points. */
 
-let face0=new Image();
-face0.src="d1.gif";
-let face1=new Image();
-face1.src="d2.gif";
-let face2=new Image();
-face2.src="d3.gif";
-let face3=new Image();
-face3.src="d4.gif";
-let face4=new Image();
-face4.src="d5.gif";
-let face5=new Image();
-face5.src="d6.gif";
-
-
-
-
-    let playerscore = 0;
-    let requiredscore = 0;
-    let players = [];
-
-
-
-
-    function throwdice(){
-        let score = 0
-        let randomdice=Math.round(Math.random()*5);
-        document.images["mydice"].src=eval("face"+randomdice+".src");
-        let diceroll = randomdice+1;
-        if (diceroll == 1) {
-            score=0
-            diceroll = 0
-            console.log("Rolled 1. Ending Turn.")
-        }else {
-            score = score + diceroll
-        }
-        console.log(diceroll);
+let numPlayers = 0;
+let playerNames = [];
+let currentPlayerIndex = 0;
+let playerScores = [];
+let roundScore = 0;
+let consecutiveDoubles = 0; // Track consecutive doubles
+let isGameActive = false;
+let useTwoDice = false;
+let dice = {
+    sides: 6,
+    roll: function () {
+      let randomNumber = Math.floor(Math.random() * this.sides) + 1;
+      return randomNumber;
     }
+}
 
+function Aloitapeli() {
+    numPlayers = document.getElementById("num-players").value;
+    document.getElementById("aloitus").style.display = "none";
+    document.getElementById("players-setup").style.display = "block";
+    for(let i = 0; i < numPlayers; i++) {
+        playerNames.push(window.prompt("Lisää pelaajan nimi"));
+    }
+    document.getElementById("player-names").innerHTML = playerNames.join("<br>");
+    playerScores = Array(numPlayers).fill(0); // Initialize scores
+}
 
-    function throw2dice(){
-        document.getElementById("otherdice").style.display="block"
-        let score = 0
-        let randomdice1=Math.round(Math.random()*5);
-        let randomdice2=Math.round(Math.random()*5);
-        document.images["mydice"].src=eval("face"+randomdice1+".src");
-        document.images["myotherdice"].src=eval("face"+randomdice2+".src");
-        if(randomdice1 == randomdice2) {
-            if (randomdice1 == 0) {
-                score = score + 25
+function startgame() {
+    isGameActive = true;
+    if (confirm("Haluatko pelata kahdella nopalla")) {
+        useTwoDice = true;
+    } else {
+        useTwoDice = false;
+    }
+    document.getElementById("players-setup").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    updateUI();
+}
+
+function rollDice() {
+    let diceRolls = [];
+    let sum = 0;
+    if (useTwoDice) {
+        let die1 = dice.roll();
+        let die2 = dice.roll();
+        diceRolls = [die1, die2];
+        sum = die1 + die2;
+
+        // Check for doubles
+        if (die1 === die2) {
+            consecutiveDoubles++;
+            if (die1 === 1) {
+                if (consecutiveDoubles === 3) {
+                    // End the round if 3 doubles in a row
+                    endTurn();
+                } else {
+                    // Double the points if the dice match but not double 1's
+                    roundScore *= 2;
+                }
+            } else {
+                roundScore += sum;
             }
-            else {
-                score = score + (randomdice1+randomdice2+2)*2
-            }
-        }else if(randomdice1 == 0 || randomdice2 == 0) {
-            score = 0 
+        } else {
+            consecutiveDoubles = 0; // Reset doubles counter if no doubles
+            roundScore += sum;
         }
-        else {
-            score = score + randomdice1+randomdice2+2
+
+        // Check if the player rolls two 1's
+        if (die1 === 1 && die2 === 1) {
+            roundScore = 25; // Special rule: two 1's give 25 points
+            endTurn(); // End the player's turn immediately
         }
-        console.log(score)
+
+        // If one die is 1, the turn ends
+        if (die1 === 1 || die2 === 1) {
+            endTurn();
+        }
+    } else {
+        let roll = dice.roll();
+        diceRolls = [roll];
+        sum = roll;
+
+        // Check if the die shows 1
+        if (roll === 1) {
+            endTurn();
+        } else {
+            roundScore += sum;
+        }
     }
+    checkGameEnd();
+}
 
+function stopTurn() {
+    playerScores[currentPlayerIndex] += roundScore;
+    endTurn();
+}
 
+function endTurn() {
+    roundScore = 0;
+    consecutiveDoubles = 0; // Reset the consecutive doubles counter
+    currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers; // Move to the next player
+}
 
-    function addPlayer(){
-        nimi = document.getElementById("pelaajat").value 
-        players.push([nimi, playerscore])
-        console.log(players)
+function checkGameEnd() {
+    // You can define a maximum score here, like 100 points to end the game
+    const targetScore = 100;
+    if (playerScores[currentPlayerIndex] >= targetScore) {
+        alert(`${playerNames[currentPlayerIndex]} wins with ${playerScores[currentPlayerIndex]} points!`);
+        resetGame();
     }
+}
 
+function resetGame() {
+    playerScores = Array(numPlayers).fill(0);
+    currentPlayerIndex = 0;
+    roundScore = 0;
+    consecutiveDoubles = 0;
+    updateUI();
+    isGameActive = false;
+    document.getElementById("game").style.display = "none";
+    document.getElementById("aloitus").style.display = "block";
+}
+
+function updateUI() {
+    document.getElementById("current-player").innerText = `Player: ${playerNames[currentPlayerIndex]}`;
+    document.getElementById("score").innerText = `Score: ${playerScores[currentPlayerIndex]}`;
+    
+    // Update the scoreboard
+    const scoreboard = document.getElementById("scoreboard");
+    scoreboard.innerHTML = '';
+    playerNames.forEach((name, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${name}: ${playerScores[index]} points`;
+        scoreboard.appendChild(li);
+    });
+}
