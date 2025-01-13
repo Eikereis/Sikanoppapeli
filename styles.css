@@ -1,3 +1,93 @@
-.invisible {
+body {
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+h1 {
+    color: #333;
+}
+
+/* Peli- ja pelaajan tiedot */
+#game, #player-setup {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+}
+
+.button-container {
+    margin-top: 20px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.dice {
+    font-size: 40px;
+    font-weight: bold;
+    color: #ff5733;
+    margin: 20px 0;
+}
+
+/* Pelaajan vuoro ja pisteet */
+#current-player {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+/* Pisteiden taulukko */
+#scoreboard ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#scoreboard li {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Kentät ja syöttöalueet */
+input, select {
+    padding: 8px;
+    margin: 10px 0;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+label {
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+/* Pelin alkuasetukset */
+#player-setup {
+    display: block;
+}
+
+#game {
     display: none;
 }
+

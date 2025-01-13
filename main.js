@@ -2,140 +2,98 @@
 Rules: 1 Dice; Let the playe throw as many times until dice hits 1. Also let him to stop throwing if he chooses to: If stops throwing, sum the dice rolls. Else Dont.
 Rules: 2 Dice; Let player throw as many times; If both dice have same number. Double the amount. If you throw 2 ones. you get 25 points. If you throw 1 one. Their turn ends. No summing;
 Note: If you throw 3 doubles in a row. your round ends and you dont get points. */
+let numPlayers = 2;
+let currentPlayer = 0;
+let players = [];
+let currentRoll = 0;
+let diceCount = 1; // 1 = yksi noppa, 2 = kaksi noppaa
+let winScore = 100; // Voittopisteet
 
-let numPlayers = 0;
-let playerNames = [];
-let currentPlayerIndex = 0;
-let playerScores = [];
-let roundScore = 0;
-let consecutiveDoubles = 0; // Track consecutive doubles
-let isGameActive = false;
-let useTwoDice = false;
-let dice = {
-    sides: 6,
-    roll: function () {
-      let randomNumber = Math.floor(Math.random() * this.sides) + 1;
-      return randomNumber;
-    }
-}
-
-function Aloitapeli() {
+// Pelaajien määrän ja muiden asetusten määrittäminen
+function startGame() {
     numPlayers = document.getElementById("num-players").value;
-    document.getElementById("aloitus").style.display = "none";
-    document.getElementById("players-setup").style.display = "block";
-    for(let i = 0; i < numPlayers; i++) {
-        playerNames.push(window.prompt("Lisää pelaajan nimi"));
+    diceCount = document.getElementById("dice-count").value;
+    winScore = document.getElementById("win-score").value;
+    
+    players = [];
+    for (let i = 0; i < numPlayers; i++) {
+        let playerName = prompt(`Anna pelaajan ${i + 1} nimi:`);
+        players.push({ name: playerName, score: 0, roundScore: 0 });
     }
-    document.getElementById("player-names").innerHTML = playerNames.join("<br>");
-    playerScores = Array(numPlayers).fill(0); // Initialize scores
-}
 
-function startgame() {
-    isGameActive = true;
-    if (confirm("Haluatko pelata kahdella nopalla")) {
-        useTwoDice = true;
-    } else {
-        useTwoDice = false;
-    }
-    document.getElementById("players-setup").style.display = "none";
+    document.getElementById("player-setup").style.display = "none";
     document.getElementById("game").style.display = "block";
-    updateUI();
+    updateScoreboard();
+    updatePlayerTurn();
 }
 
-function rollDice() {
-    let diceRolls = [];
-    let sum = 0;
-    if (useTwoDice) {
-        let die1 = dice.roll();
-        let die2 = dice.roll();
-        diceRolls = [die1, die2];
-        sum = die1 + die2;
+// Päivitä pelaajan vuoro
+function updatePlayerTurn() {
+    document.getElementById("current-player").textContent = `${players[currentPlayer].name}'s vuoro`;
+    currentRoll = 0;
+    document.getElementById("dice-rolls").textContent = "Heitä noppaa!";
+}
 
-        // Check for doubles
-        if (die1 === die2) {
-            consecutiveDoubles++;
-            if (die1 === 1) {
-                if (consecutiveDoubles === 3) {
-                    // End the round if 3 doubles in a row
-                    endTurn();
-                } else {
-                    // Double the points if the dice match but not double 1's
-                    roundScore *= 2;
-                }
-            } else {
-                roundScore += sum;
+// Päivitä taulukko
+function updateScoreboard() {
+    let scoreboard = "<h2>Pisteet</h2><ul>";
+    players.forEach(player => {
+        scoreboard += `<li>${player.name}: ${player.score} pistettä</li>`;
+    });
+    scoreboard += "</ul>";
+    document.getElementById("scoreboard").innerHTML = scoreboard;
+}
+
+// Heitä noppaa
+function rollDice() {
+    let roll1 = Math.floor(Math.random() * 6) + 1;
+    let roll2 = 0;
+    if (diceCount == 2) {
+        roll2 = Math.floor(Math.random() * 6) + 1;
+        document.getElementById("dice-rolls").textContent = `Heitit: ${roll1}, ${roll2}`;
+    } else {
+        document.getElementById("dice-rolls").textContent = `Heitit: ${roll1}`;
+    }
+
+    if (roll1 === 1 || roll2 === 1) {
+        // Yksi noppa on 1:stä -> vuoro päättyy
+        players[currentPlayer].roundScore = 0;
+        alert("Heitit ykkösen! Vuoro päättyy.");
+        endTurn();
+    } else {
+        // Lasketaan pisteet
+        if (roll1 === roll2) { // Tuplat
+            players[currentPlayer].roundScore += (roll1 + roll2) * 2;
+            if (roll1 === 1 && roll2 === 1) { // Kaksi ykköstä
+                players[currentPlayer].roundScore = 25;
+                alert("Heitit kaksi ykköstä! Saat 25 pistettä.");
             }
         } else {
-            consecutiveDoubles = 0; // Reset doubles counter if no doubles
-            roundScore += sum;
-        }
-
-        // Check if the player rolls two 1's
-        if (die1 === 1 && die2 === 1) {
-            roundScore = 25; // Special rule: two 1's give 25 points
-            endTurn(); // End the player's turn immediately
-        }
-
-        // If one die is 1, the turn ends
-        if (die1 === 1 || die2 === 1) {
-            endTurn();
-        }
-    } else {
-        let roll = dice.roll();
-        diceRolls = [roll];
-        sum = roll;
-
-        // Check if the die shows 1
-        if (roll === 1) {
-            endTurn();
-        } else {
-            roundScore += sum;
+            players[currentPlayer].roundScore += roll1 + roll2;
         }
     }
-    checkGameEnd();
 }
 
-function stopTurn() {
-    playerScores[currentPlayerIndex] += roundScore;
-    endTurn();
-}
-
+// Lopeta vuoro
 function endTurn() {
-    roundScore = 0;
-    consecutiveDoubles = 0; // Reset the consecutive doubles counter
-    currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers; // Move to the next player
-}
+    players[currentPlayer].score += players[currentPlayer].roundScore;
+    players[currentPlayer].roundScore = 0;
+    updateScoreboard();
+    currentPlayer = (currentPlayer + 1) % numPlayers;
+    updatePlayerTurn();
 
-function checkGameEnd() {
-    // You can define a maximum score here, like 100 points to end the game
-    const targetScore = 100;
-    if (playerScores[currentPlayerIndex] >= targetScore) {
-        alert(`${playerNames[currentPlayerIndex]} wins with ${playerScores[currentPlayerIndex]} points!`);
+    // Tarkista voittaja
+    if (players[currentPlayer].score >= winScore) {
+        alert(`${players[currentPlayer].name} voitti pelin!`);
         resetGame();
     }
 }
 
+// Uusi peli
 function resetGame() {
-    playerScores = Array(numPlayers).fill(0);
-    currentPlayerIndex = 0;
-    roundScore = 0;
-    consecutiveDoubles = 0;
-    updateUI();
-    isGameActive = false;
+    numPlayers = 2;
+    currentPlayer = 0;
+    players = [];
+    document.getElementById("player-setup").style.display = "block";
     document.getElementById("game").style.display = "none";
-    document.getElementById("aloitus").style.display = "block";
-}
-
-function updateUI() {
-    document.getElementById("current-player").innerText = `Player: ${playerNames[currentPlayerIndex]}`;
-    document.getElementById("score").innerText = `Score: ${playerScores[currentPlayerIndex]}`;
-    
-    // Update the scoreboard
-    const scoreboard = document.getElementById("scoreboard");
-    scoreboard.innerHTML = '';
-    playerNames.forEach((name, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${name}: ${playerScores[index]} points`;
-        scoreboard.appendChild(li);
-    });
 }
